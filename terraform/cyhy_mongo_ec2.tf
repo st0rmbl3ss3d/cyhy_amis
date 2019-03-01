@@ -48,6 +48,49 @@ resource "aws_instance" "cyhy_mongo" {
   # want to use volume_tags here
   # volume_tags = "${merge(var.tags, map("Name", "CyHy Mongo"))}"
 }
+# IAM assume role policy document for the BOD Docker IAM role to be
+# used by the BOD Docker EC2 instance
+data "aws_iam_policy_document" "mongo_feed_assume_role_doc" {
+  statement {
+    effect = "Allow"
+
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type = "Service"
+      identifiers = ["ec2.amazonaws.com"]
+    }
+  }
+}
+
+# The mongo IAM role to be used by the mongo EC2 instance for cyhy-feeds
+resource "aws_iam_role" "mongo_feed_role" {
+ assume_role_policy = "${data.aws_iam_policy_document.mongo_feed_assume_role_doc.json}"
+}
+
+# IAM policy document that only allows GETting from the dmarc-import
+# Elasticsearch database.  This will be applied to the role we are
+# creating.
+data "aws_iam_policy_document" "es_mongo_feed_doc" {
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "es:ESHttpGet"
+    ]
+
+    resources = [
+      "${var.dmarc_import_es_arn}",
+      "${var.dmarc_import_es_arn}/*"
+    ]
+  }
+}
+
+# The Elasticsearch policy for our role
+resource "aws_iam_role_policy" "es_mongo_feed_policy" {
+  role = "${aws_iam_role.mongo_feed_role.id}"
+  policy = "${data.aws_iam_policy_document.es_mongo_feed_doc.json}"
+}
 
 # Provision the mongo EC2 instance via Ansible
 # TODO when we start using multiple mongo, move this to a dyn_mongo module
