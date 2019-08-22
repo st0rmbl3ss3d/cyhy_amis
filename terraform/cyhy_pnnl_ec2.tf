@@ -94,6 +94,7 @@ module "cyhy_pnnl_ansible_provisioner" {
     "host_groups=pnnl",
     "production_workspace=${local.production_workspace}",
     "aws_region=${var.aws_region}",
+    "dmarc_import_aws_region=${var.dmarc_import_aws_region}",
   ]
   playbook = "../ansible/playbook.yml"
   dry_run  = false
