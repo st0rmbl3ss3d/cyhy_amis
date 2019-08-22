@@ -39,6 +39,13 @@
     - mongo
     - cyhy_feeds
 
+- hosts: pnnl
+  name: Install cyhy-feeds
+  become: yes
+  become_method: sudo
+  roles:
+    - cyhy_feeds
+
 - hosts: nessus
   name: Install and configure Nessus
   become: yes
