@@ -58,7 +58,7 @@ resource "aws_security_group_rule" "private_mongodb_ingress" {
   cidr_blocks = [
     "${aws_instance.cyhy_reporter.private_ip}/32",
     "${aws_instance.cyhy_dashboard.private_ip}/32",
-    "${aws_instance.cyhy_pnnl.private_ip}/32,"
+    "${aws_instance.cyhy_pnnl[0].private_ip}/32"
   ]
   from_port = 27017
   to_port   = 27017
