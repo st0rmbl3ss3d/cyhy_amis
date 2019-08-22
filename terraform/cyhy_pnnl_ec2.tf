@@ -46,7 +46,6 @@ resource "aws_iam_instance_profile" "cyhy_pnnl" {
 }
 
 resource "aws_instance" "cyhy_pnnl" {
-  count                       = local.mongo_instance_count
   ami                         = data.aws_ami.cyhy_pnnl.id
   instance_type               = local.production_workspace ? "t3.medium" : "t3.micro"
   availability_zone           = "${var.aws_region}${var.aws_availability_zone}"
@@ -89,12 +88,12 @@ module "cyhy_pnnl_ansible_provisioner" {
   ]
   envs = [
     "ANSIBLE_SSH_RETRIES=5",
-    "host=${aws_instance.cyhy_pnnl[0].private_ip}",
+    "host=${aws_instance.cyhy_pnnl.private_ip}",
     "bastion_host=${aws_instance.cyhy_bastion.public_ip}",
     "host_groups=pnnl",
     "production_workspace=${local.production_workspace}",
     "aws_region=${var.aws_region}",
-    "dmarc_import_aws_region=${var.dmarc_import_aws_region}",
+    "dmarc_import_aws_region=${var.dmarc_pnnl_import_aws_region}",
   ]
   playbook = "../ansible/playbook.yml"
   dry_run  = false

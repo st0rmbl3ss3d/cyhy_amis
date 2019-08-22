@@ -131,6 +131,11 @@ variable "dmarc_import_aws_region" {
   default     = "us-east-1"
 }
 
+variable "dmarc_pnnl_import_aws_region" {
+  description = "The AWS region where the dmarc-import Elasticsearch database does not reside so the PNNL instance does not have access (Ansible needs this variable though)."
+  default     = "us-west-2"
+}
+
 variable "dmarc_import_es_arn" {
   description = "The ARN of the dmarc-import Elasticsearch database."
 }
