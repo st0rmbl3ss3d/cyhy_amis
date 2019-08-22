@@ -37,6 +37,13 @@
     - mongo_logrotate
     - cyhy_feeds
 
+- hosts: pnnl
+  name: Finalize cyhy_feeds setup
+  become: yes
+  become_method: sudo
+  roles:
+    - cyhy_feeds
+
 - hosts: bod_docker
   name: Configure Docker hosts for BOD 18-01 scanning and reporting
   become: yes
@@ -114,4 +121,3 @@
   become_method: sudo
   roles:
     - mgmt_ops
-    
