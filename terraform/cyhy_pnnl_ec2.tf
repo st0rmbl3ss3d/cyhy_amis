@@ -47,7 +47,7 @@ resource "aws_iam_instance_profile" "cyhy_pnnl" {
 
 resource "aws_instance" "cyhy_pnnl" {
   ami                         = data.aws_ami.cyhy_pnnl.id
-  instance_type               = local.production_workspace ? "t3.medium" : "t3.micro"
+  instance_type               = local.production_workspace ? "c5.2xlarge" : "t3.micro"
   availability_zone           = "${var.aws_region}${var.aws_availability_zone}"
   subnet_id                   = aws_subnet.cyhy_private_subnet.id
   associate_public_ip_address = false
