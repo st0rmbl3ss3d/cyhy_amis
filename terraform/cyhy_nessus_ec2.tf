@@ -20,6 +20,57 @@ data "aws_ami" "nessus" {
   most_recent = true
 }
 
+# IAM assume role policy document for the CyHy Nessus IAM role to be
+# used by the CyHy Nessus EC2 instance
+data "aws_iam_policy_document" "cyhy_nessus_assume_role_doc" {
+  statement {
+    effect = "Allow"
+
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["ec2.amazonaws.com"]
+    }
+  }
+}
+
+# The CyHy Nessus IAM role to be used by the CyHy Nessus EC2 instance
+resource "aws_iam_role" "cyhy_nessus_role" {
+  assume_role_policy = data.aws_iam_policy_document.cyhy_nessus_assume_role_doc.json
+}
+
+# IAM policy document that that allows some SSM permissions
+# for the CyHy Nessus instance.  This will allow the EC2 instance to
+# get the SSM parameters that contain the credentials needed to access the
+# Nessus web API.  This will be applied to the role we are creating.
+data "aws_iam_policy_document" "cyhy_nessus_ssm_doc" {
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "ssm:GetParameter",
+    ]
+
+    resources = [
+      "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/cyhy/nessus/username",
+      "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/cyhy/nessus/password"
+    ]
+  }
+}
+
+# The SSM policy for our role
+resource "aws_iam_role_policy" "cyhy_nessus_ssm_policy" {
+  role   = aws_iam_role.cyhy_nessus_role.id
+  policy = data.aws_iam_policy_document.cyhy_nessus_ssm_doc.json
+}
+
+# The instance profile to be used by any EC2 instances that need to
+# access Nessus related SSM parameters.
+resource "aws_iam_instance_profile" "cyhy_nessus" {
+  role = aws_iam_role.cyhy_nessus_role.name
+}
+
 resource "aws_instance" "cyhy_nessus" {
   ami               = data.aws_ami.nessus.id
   instance_type     = local.production_workspace ? "m5.2xlarge" : "m5.large"
@@ -39,6 +90,7 @@ resource "aws_instance" "cyhy_nessus" {
   ]
 
   user_data_base64 = data.template_cloudinit_config.ssh_and_nessus_cyhy_runner_cloud_init_tasks.rendered
+  iam_instance_profile = aws_iam_instance_profile.cyhy_nessus.name
 
   tags = merge(
     var.tags,
