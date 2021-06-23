@@ -28,6 +28,8 @@
   name: docker
 - src: https://github.com/cisagov/ansible-role-htop
   name: htop
+- src: https://github.com/cisagov/ansible-role-geoip2
+  name: geoip2
 - src: https://github.com/cisagov/ansible-role-mongo
   name: mongo
 - src: https://github.com/cisagov/ansible-role-more-ephemeral-ports
